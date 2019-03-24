@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="ISO-8859-1">
+		<title>Logged-In</title>
+		<link rel="stylesheet" type="text/css" href="css.css" />
+		<meta name="google-signin-scope" content="profile email">
+    	<meta name="google-signin-client_id" content="488386364348-hd40fi7q2vc1k4jdghrvqomjm164kcc3.apps.googleusercontent.com">
+    	<script src="https://apis.google.com/js/platform.js" async defer></script>
+    	<script src="https://code.jquery.com/jquery-3.1.1.js"></script>
+	</head>
+	<header>
+		 <div class="homeText"><a href="home.html">Home</a></div> <div class="profileText"><a href="profile.html">Profile</a></div><img src="search_image.JPG" id="searchImage" onclick="process()"/><input type="text" class="searchBar" placeholder="Search Friends" id="search">
+  		 <script>
+  		 	function process() {
+  		 		var search = document.getElementById('search').value;
+  		 		document.getElementById("hiddenSearch").value = search;
+  		 		
+  		 		$.ajax({
+  		 	        url: 'processSearchResults',
+  		 	     	data: $(myForm).serialize(),
+  		 	        type: 'POST',
+  		 	        success: function(response) {
+  		 	        	console.log("success");
+  		 	        	window.location.href = 'search_results.html';
+  		 	        },
+  		 	        error: function(error) {
+  		 	            console.log(error);
+  		 	        }     
+  		 		});
+  		 	}
+  		 </script>
+  	</header>
+	<body>
+		<p>
+          <img src="logged-in.JPG" />
+        </p>
+	</body>
+	<form id="myForm" role="form">
+		<input id="hiddenSearch" name="hiddenSearch" type="hidden">
+	</form>
+	<div class="g-signin2" data-onsuccess="onSignIn" data-height=50px data-width=200px data-theme="dark" id="button2">  </div>
+	<div class="signOutButton">
+		<img src="signed_in.JPG" height=50px width=200px onclick="signOut()" id="button3">
+		<script>
+		  function signOut() {
+		    var auth2 = gapi.auth2.getAuthInstance();
+		    auth2.signOut().then(function () {
+		      console.log('User signed out.');
+		    });
+		    window.location.href = 'sign_in.html';
+		  } 
+		</script>
+	</div>
+	<footer>
+	</footer>
+</html>

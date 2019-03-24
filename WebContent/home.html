@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="ISO-8859-1">
+		<title>Home</title>
+		<link rel="stylesheet" type="text/css" href="css.css" />
+		<script src="https://code.jquery.com/jquery-3.1.1.js"></script>
+		<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+		<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+	</head>
+	<header>
+		 <div class="sycamoreCalendarText"><a href="logged_in.html">Sycamore Calendar</a></div> <div class="homeText"><a href="home.html">Home</a></div> <div class="profileText"><a href="profile.html">Profile</a></div><img src="search_image.JPG" id="searchImage" onclick="process()"/><input type="text" class="searchBar" placeholder="Search Friends" id="search">
+  		 <script>
+  		 	function process() {
+  		 		var search = document.getElementById('search').value;
+  		 		document.getElementById("hiddenSearch").value = search;
+  		 		console.log(document.getElementById("hiddenSearch").value);
+  		 		
+  		 		$.ajax({
+  		 	        url: 'processSearchResults',
+  		 	     	data: $(myForm).serialize(),
+  		 	        type: 'POST',
+  		 	        success: function(response) {
+  		 	        	console.log("success");
+  		 	        	window.location.href = 'search_results.html';
+  		 	        },
+  		 	        error: function(error) {
+  		 	            console.log(error);
+  		 	        }     
+  		 		});
+  		 	}
+  		 </script>
+  	</header>
+  	<script>
+	  	$.ajax({
+	        url: 'getUsersBeingFollowed',
+	        type: 'POST',
+	        success: function(response) {
+	        	console.log(response);
+				displayUsersBeingFollowed(response);
+	        },
+	        error: function(error) {
+	            console.log(error);
+	        }
+		});
+	  	
+	  	function displayUsersBeingFollowed(response)
+	  	{
+	  		var content = "";
+	  		var count = 0;
+	  		var users = response.split('!!!', 100);
+	  		console.log(users);
+	  		
+	  		content += '<tr>';
+  			for (var i = 0; i < users.length; i++)
+  			{
+  				if (users[i] != "")
+					{
+  					console.log(users[i]);
+		  			fname = users[i].split(',', 100)[0];
+		  			lname = users[i].split(',', 100)[1];
+		  			URL = users[i].split(',', 100)[2];
+		  			content += "<td><div class='wrapperSearch' onclick='getLink(this.id)' id='" + URL + "'><div id='innerImageSearch'><img src='" + URL + "' id='test3'></div><div id='innerNameSearch'>" + fname + " " + lname + "</div></div></td>";
+		  			count++;
+					}
+  				if (count == 4)
+					{
+						content += '</tr><tr>';
+						count = 0;
+					}
+  			}
+  			content += '</tr>';
+	  		
+	  		$('#followingTable').html(content);
+	  	}
+	  	
+	  	function getLink(clicked_id) {
+	  		document.getElementById("hiddenID").value = clicked_id;
+		 		
+		 		$.ajax({
+		 	        url: 'setClickedID',
+		 	     	data: $(myForm1).serialize(),
+		 	        type: 'POST',
+		 	        success: function(response) {
+		 	        	console.log(response);
+		 	        	window.location.href = 'user_profile.html';
+		 	        },
+		 	        error: function(error) {
+		 	            console.log(error);
+		 	        }     
+		 		});
+	  	}
+  	</script>
+	<body>
+		<div id="dialog-modal" style="display:none">
+	    	<div id="dialog-modal-content"></div>
+	  	</div>
+		<script>
+		  $( function() {
+		    $( "#homePageFormEventStartDate" ).datepicker();
+		    $( "#homePageFormEventEndDate" ).datepicker();
+		  } );
+		  
+		  function test() 
+		  {
+			  	var content = "";
+			  	var title = document.getElementById('homePageFormEventTitle').value;
+		    	var startDate = document.getElementById('homePageFormEventStartDate').value;
+		    	var endDate = document.getElementById('homePageFormEventEndDate').value;
+		    	var startTime = document.getElementById('homePageFormEventStartTime').value.toString();
+		    	var endTime = document.getElementById('homePageFormEventEndTime').value.toString();
+		    	
+		    	var startMonth = "";
+		    	var startDay = "";
+		    	var startYear = "";
+		    	
+		    	var endMonth = "";
+		    	var endDay = "";
+		    	var endYear = "";
+		    	
+		    	var startHour = "";
+		    	var startMinute = "";
+		    	var endHour = "";
+		    	var endMinute = "";
+		    	
+		    	var invalid = false;
+		    	var wrongTitle = false;
+		    	var wrongDate = false;
+		    	
+		    	if (title == "")
+	    		{
+	    			invalid = true;
+	    			content = "Please enter a title for the event.";
+	    		}
+		    	
+		    	var correctFormat = /[0-9]{2}:[0-9]{2}/;
+		    	var correctDateFormat = new RegExp('[0-9]{2}/[0-9]{2}/[0-9]{4}');
+		    	
+		    	console.log(startTime);
+		    	console.log(endTime);
+		    	
+		    	if (!correctFormat.test(startTime) || !correctFormat.test(endTime.trim()))
+				{
+		    		invalid = true;
+		    		if (!correctFormat.test(startTime))
+					{
+		    			console.log("start time not correct");
+		    			content = "Please enter a correct start time for the event.";
+					}
+		    		
+		    		if (!correctFormat.test(endTime))
+					{
+		    			console.log("end time not correct");
+		    			content = "Please enter a correct end time for the event.";
+					}
+				}
+		    	else
+				{
+		    		console.log("correct time format");
+				}
+		    	
+		    	if (!correctDateFormat.test(startDate) || !correctDateFormat.test(endDate.trim()))
+				{
+		    		invalid = true;
+		    		if (!correctDateFormat.test(startDate))
+					{
+		    			console.log("start date not correct");
+		    			content = "Please enter a correct start date for the event.";
+					}
+		    		
+		    		if (!correctDateFormat.test(endDate))
+					{
+		    			console.log("end date not correct");
+		    			content = "Please enter a correct end date for the event.";
+					}
+				}
+		    	else
+				{
+		    		console.log("correct date format");
+		    		startMonth = startDate.split('/', 1)[0].toString();
+			    	startDay = startDate.split('/', 2)[1].toString();
+			    	startYear = startDate.split('/', 3)[2].toString();
+			    	endMonth = endDate.split('/', 1)[0].toString();
+			    	endDay = endDate.split('/', 2)[1].toString();
+			    	endYear = endDate.split('/', 3)[2].toString();
+				}
+		    	
+		    	if (!invalid)
+				{
+		    		startHour = startTime.split(':', 1)[0].toString();
+		    		startMinute = startTime.split(':', 2)[1].toString();
+		    		endHour = endTime.split(':', 1)[0].toString();
+		    		endMinute = endTime.split(':', 2)[1].toString();
+		    		
+		    		if (startHour > 23 || endHour > 23)
+					{
+		    			invalid = true;
+		    			content = "Please enter a correct start time for the event. The valid values for 'hour' are 0-23";
+					}
+		    		
+		    		if (startMinute > 59 || endMinute > 59)
+					{
+		    			invalid = true;
+		    			content = "Please enter a correct start time for the event. The valid values for 'minute' are 0-59";
+					}
+				}
+		    	
+				document.getElementById('homePageFormEventTitle').value = "Event Title";
+				document.getElementById('homePageFormEventStartDate').value = "Start Date";
+				document.getElementById('homePageFormEventEndDate').value = "End Date";
+				document.getElementById('homePageFormEventStartTime').value = "Start Time";
+				document.getElementById('homePageFormEventEndTime').value = "End Time";
+				
+				var event = {
+						  'summary': title,
+						  'start': {
+						    'dateTime': startYear + '-' + startMonth + '-' + startDay + 'T' + startTime + ':00-00:00',
+						    'timeZone': 'America/Los_Angeles'
+						  },
+						  'end': {
+							'dateTime': endYear + '-' + endMonth + '-' + endDay + 'T' + endTime + ':00-00:00',
+						    'timeZone': 'America/Los_Angeles'
+						  },
+						};
+				
+				if (!invalid)
+				{
+					gapi.client.load('calendar', 'v3', function ()
+					{
+						var request = gapi.client.calendar.events.insert({
+							  'calendarId': 'primary',
+							  'resource': event
+							});
+						
+						
+						request.execute(function(event) {
+							console.log("inserted event");
+							});
+					});
+					content = "Successfully added the event.";
+				}
+				
+				console.log("end of function");
+				$( "#dialog-modal" ).dialog({
+			        height: 200,
+			        width: 200,
+			        modal: true
+			        });
+				$('#dialog-modal-content').html(content);
+				$( "#dialog-modal" ).show();
+				
+				invalid = false;
+		  }
+		</script>
+		<script>
+		
+		</script>
+		<h2>
+			Home
+		</h2>
+		<div id="homePage">
+			<div id="homePageImage"></div>
+			<div id="homePageName"></div>
+			
+			<form id="homePageForm" role="form">
+				<table id="homePageTable">
+					<tr>
+						<th><input id="homePageFormEventTitle" name="homePageFormEventTitle" class="homePageInput" value="Event Title"></th>
+					</tr>
+				</table>
+				<table id="homePageTable2">
+					<tr>
+						<th><input id="homePageFormEventStartDate" name="homePageFormEventStartDate" class="homePageInput" value="Start Date"></th>
+						<th><input id="homePageFormEventEndDate" name="homePageFormEventEndDate" class="homePageInput" value="End Date"></th>
+						<th><input class="button" type="button" id="homePageButton" name="homePageButton" value="Add Event" onclick="test()"></th>
+					</tr>
+					<tr>
+						<th><input id="homePageFormEventStartTime" name="homePageFormEventStartTime" class="homePageInput" value="Start Time"></th>
+						<th><input id="homePageFormEventEndTime" name="homePageFormEventEndTime" class="homePageInput" value="End Time"></th>
+					</tr>
+				</table>	
+			</form>	
+		<h2>
+			Following
+		</h2>
+		<table id="followingTable" width=50%>
+		</table>
+		</div>
+		
+		
+		
+	<script type="text/javascript">
+	// Client ID and API key from the Developer Console
+    var CLIENT_ID = '488386364348-hd40fi7q2vc1k4jdghrvqomjm164kcc3.apps.googleusercontent.com';
+    var API_KEY = 'AIzaSyA1N-prOkQjKcG7g3WWnvEvv5dBk4CupXY';
+
+    // Array of API discovery doc URLs for APIs used by the quickstart
+    var DISCOVERY_DOCS = ["https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest"];
+
+    // Authorization scopes required by the API; multiple scopes can be
+    // included, separated by spaces.
+    var SCOPES = "https://www.googleapis.com/auth/calendar.readonly";
+    
+    var token = "";
+    
+    $.ajax({
+        url: 'retrieveData',
+        type: 'POST',
+        success: function(response) {
+        	console.log(response);
+        	var name = response.split(',', 1)[0].toString();
+        	var image = response.split(',', 2)[1].toString();
+        	token = response.split(',', 3)[2].toString();
+        	$('#homePageName').html(name);
+        	$('#homePageImage').html('<img src="' + image + '" id="test3"/>');
+        },
+        error: function(error) {
+            console.log(error);
+        }
+	});
+
+
+    /**
+     *  On load, called to load the auth2 library and API client library.
+     */
+    function handleClientLoad() {
+        gapi.load('client:auth2', initClient);      
+    }
+    
+    function checkAuth() {
+        gapi.auth.authorize({ client_id: CLIENT_ID, scope: SCOPES, immediate: true }, handleAuthResult);
+            }
+
+    /**
+     *  Initializes the API client library and sets up sign-in state
+     *  listeners.
+     */
+    function initClient() {
+      gapi.client.init({
+        apiKey: API_KEY,
+        clientId: CLIENT_ID,
+        discoveryDocs: DISCOVERY_DOCS,
+        scope: SCOPES,
+        auth: token
+      }).then(function () {
+        // Listen for sign-in state changes.
+        gapi.auth2.getAuthInstance().isSignedIn.listen(updateSigninStatus);
+        //let GoogleAuth = gapi.auth2.getAuthInstance();
+        // Retrieve the GoogleUser object for the current user.
+        //var GoogleUser = GoogleAuth.currentUser.get();
+        //GoogleUser.grant({'scope':'https://www.googleapis.com/auth/calendar'});
+
+        //gapi.auth2.getAuthInstance().signIn();
+        // Handle the initial sign-in state.
+        updateSigninStatus(gapi.auth2.getAuthInstance().isSignedIn.get());
+      });
+    }
+
+    /**
+     *  Called when the signed in status changes, to update the UI
+     *  appropriately. After a sign-in, the API is called.
+     */
+    function updateSigninStatus(isSignedIn) {
+      if (isSignedIn) {
+      	console.log("signed in");
+      } else {
+        console.log("not signed in");
+      }
+    }
+
+    </script>
+    <div class="g-signin2" data-onsuccess="onSignIn" data-height=50px data-width=200px data-theme="dark" id="button2">  </div>
+    <script async defer src="https://apis.google.com/js/api.js"
+      onload="this.onload=function(){};handleClientLoad()"
+      onreadystatechange="if (this.readyState === 'complete') this.onload()">
+    </script>
+	</body>
+	<form id="myForm" role="form">
+		<input id="hiddenSearch" name="hiddenSearch" type="hidden">
+	</form>
+	<form id="myForm1" role="form">
+		<input id="hiddenID" name="hiddenID" type="hidden">
+	</form>
+	<footer>
+	</footer>
+</html>

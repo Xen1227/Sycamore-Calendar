@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="ISO-8859-1">
+		<title>Search Results</title>
+		<link rel="stylesheet" type="text/css" href="css.css" />
+		<meta name="google-signin-scope" content="profile email">
+    	<meta name="google-signin-client_id" content="488386364348-hd40fi7q2vc1k4jdghrvqomjm164kcc3.apps.googleusercontent.com">
+    	<script src="https://apis.google.com/js/platform.js" async defer></script>
+    	<script src="https://code.jquery.com/jquery-3.1.1.js"></script>
+	</head>
+	<header>
+		 <div class="sycamoreCalendarText"><a href="logged_in.html">Sycamore Calendar</a></div><div class="homeText"><a href="home.html">Home</a></div> <div class="profileText"><a href="profile.html">Profile</a></div><img src="search_image.JPG" id="searchImage" onclick="process()"/><input type="text" class="searchBar" placeholder="Search Friends" id="search">
+  		 <script>
+  		 	function process() {
+  		 		var search = document.getElementById('search').value;
+  		 		document.getElementById("hiddenSearch").value = search;
+  		 		
+  		 		$.ajax({
+  		 	        url: 'processSearchResults',
+  		 	     	data: $(myForm).serialize(),
+  		 	        type: 'POST',
+  		 	        success: function(response) {
+  		 	        	console.log("success");
+  		 	        	window.location.href = 'search_results.html';
+  		 	        },
+  		 	        error: function(error) {
+  		 	            console.log(error);
+  		 	        }     
+  		 		});
+  		 	}
+  		 </script>
+  	</header>
+  	<script>
+	  	$.ajax({
+	        url: 'retrieveData',
+	        type: 'POST',
+	        success: function(response) {
+	        	var data = response.toString().split("???", 2)[1].split("!!!", 2)[0];
+	        	console.log(data);
+	        	displaySearchResults(data);
+	        },
+	        error: function(error) {
+	            console.log(error);
+	        }
+		});
+	  	
+	  	function displaySearchResults(response)
+	  	{
+	  		var content = "";
+	  		var count = 0;
+	  		if (response == "No Users Found")
+  			{
+  				content = "No Users Found";
+  			}
+	  		var users = response.split('***', 100);
+	  		
+	  		console.log(users);
+	  		console.log(users.length);
+	  		
+	  		if (response != "No Users Found")
+  			{
+	  			content += '<tr>';
+	  			for (var i = 0; i < users.length; i++)
+	  			{
+	  				if (users[i] != "")
+  					{
+	  					console.log(users[i]);
+			  			fname = users[i].split(',', 100)[0];
+			  			lname = users[i].split(',', 100)[1];
+			  			URL = users[i].split(',', 100)[2];
+			  			content += "<td><div class='wrapperSearch' onclick='getLink(this.id)' id='" + URL + "'><div id='innerImageSearch'><img src='" + URL + "' id='test3'></div><div id='innerNameSearch'>" + fname + " " + lname + "</div></div></td>";
+			  			count++;
+  					}
+	  				if (count == 3)
+  					{
+  						content += '</tr><tr>';
+  						count = 0;
+  					}
+	  			}
+	  			content += '</tr>';
+  			}
+	  		
+	  		
+	  		$('#searchTable').html(content);
+	  	}
+	  	
+	  	function getLink(clicked_id) {
+	  		document.getElementById("hiddenID").value = clicked_id;
+		 		
+		 		$.ajax({
+		 	        url: 'setClickedID',
+		 	     	data: $(myForm1).serialize(),
+		 	        type: 'POST',
+		 	        success: function(response) {
+		 	        	console.log(response);
+		 	        	window.location.href = 'user_profile.html';
+		 	        },
+		 	        error: function(error) {
+		 	            console.log(error);
+		 	        }     
+		 		});
+	  	}
+  	</script>
+	<body>
+		<table id="searchTable" width=60%>
+				
+		</table>
+	</body>
+	<form id="myForm" role="form">
+		<input id="hiddenSearch" name="hiddenSearch" type="hidden">
+	</form>
+	<form id="myForm1" role="form">
+		<input id="hiddenID" name="hiddenID" type="hidden">
+	</form>
+	<footer>
+	</footer>
+</html>
